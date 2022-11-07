@@ -371,43 +371,139 @@ ii. Beachwood
 
 SQL code used to arrive at answer:
 
+select stars,count(DISTINCT id)
+from business
+where city='Beachwood'
+group by stars
 
 Copy and Paste the Resulting Table Below (2 columns â€“ star rating and count):
-		
++-------+--------------------+
+| stars | count(DISTINCT id) |
++-------+--------------------+
+|   2.0 |                  1 |
+|   2.5 |                  1 |
+|   3.0 |                  2 |
+|   3.5 |                  2 |
+|   4.0 |                  1 |
+|   4.5 |                  2 |
+|   5.0 |                  5 |
++-------+--------------------+		
 
 
 7. Find the top 3 users based on their total number of reviews:
 		
 	SQL code used to arrive at answer:
 	
-		
+	select name,count(*) as cantidad_review 
+    from user
+    inner join review as re on user.id=re.user_id
+    group by name
+    order by cantidad_review desc
+    LIMIT 3
+	
 	Copy and Paste the Result Below:
-		
+
++-----------+-----------------+
+| name      | cantidad_review |
++-----------+-----------------+
+| Ed        |               3 |
+| Amy       |               2 |
+| Christina |               2 |
++-----------+-----------------+
 
 
 8. Does posing more reviews correlate with more fans?
 
 	Please explain your findings and interpretation of the results:
 	
+    select name , review_count, fans
+    from user 
+    order by fans desc
+    limit 10
 
+
+    +-----------+--------------+------+             
+    | name      | review_count | fans |
+    +-----------+--------------+------+
+    | Gerald    |         2000 |  253 |
+    | Sara      |         1629 |   50 |
+    | Yuri      |         1339 |   76 |
+    | .Hon      |         1246 |  101 |
+    | William   |         1215 |  126 |
+    | Harald    |         1153 |  311 |
+    | eric      |         1116 |   16 |
+    | Roanna    |         1039 |  104 |
+    | Mimi      |          968 |  497 |
+    | Christine |          930 |  173 |
+    +-----------+--------------+------+
+
+    +-----------+--------------+------+
+    | name      | review_count | fans |
+    +-----------+--------------+------+
+    | Amy       |          609 |  503 |
+    | Mimi      |          968 |  497 |
+    | Harald    |         1153 |  311 |
+    | Gerald    |         2000 |  253 |
+    | Christine |          930 |  173 |
+    | Lisa      |          813 |  159 |
+    | Cat       |          377 |  133 |
+    | William   |         1215 |  126 |
+    | Fran      |          862 |  124 |
+    | Lissa     |          834 |  120 |
+    +-----------+--------------+------+
+    It does not correlate. The records in the table order by fans in DESC order show that the differences between all review_count and the differences of fans aren't following a pattern.
 	
 9. Are there more reviews with the word "love" or with the word "hate" in them?
 
 	Answer:
+    Yes.                                
+    +---------------+               
+    | cantidad_love |
+    +---------------+
+    |          1780 |
+    +---------------+
 
+    +---------------+
+    | cantidad_hate |
+    +---------------+
+    |           232 |
+    +---------------+
 	
 	SQL code used to arrive at answer:
 
-	
+    select count(*) as cantidad_love            
+    from review 
+    where text like '%love%'
+
+    select count(*) as cantidad_hate            
+    from review 
+    where text like '%hate%'
+
 	
 10. Find the top 10 users with the most fans:
 
 	SQL code used to arrive at answer:
-	
-	
+    select name,fans
+        from user 
+        order by fans desc
+        limit 10
+   
 	Copy and Paste the Result Below:
 
-	
+	+-----------+------+
+    | name      | fans |
+    +-----------+------+
+    | Amy       |  503 |
+    | Mimi      |  497 |
+    | Harald    |  311 |
+    | Gerald    |  253 |
+    | Christine |  173 |
+    | Lisa      |  159 |
+    | Cat       |  133 |
+    | William   |  126 |
+    | Fran      |  124 |
+    | Lissa     |  120 |
+    +-----------+------+
 		
 
 Part 2: Inferences and Analysis
@@ -416,14 +512,81 @@ Part 2: Inferences and Analysis
 	
 i. Do the two groups you chose to analyze have a different distribution of hours?
 
+select distinct name,city,stars,hours, cat.category
+from business as b
+inner join hours as ho on b.id = ho.business_id
+inner join category cat on b.id = cat.business_id
+where city='Phoenix' and category='Restaurants' and stars between 2 and 3
+order by  name,hours 
+
+    +-------------+---------+-------+----------------------+-------------+
+| name        | city    | stars | hours                | category    |
++-------------+---------+-------+----------------------+-------------+
+| Gallagher's | Phoenix |   3.0 | Friday|11:00-2:00    | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Monday|11:00-0:00    | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Saturday|9:00-2:00   | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Sunday|9:00-0:00     | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Thursday|11:00-2:00  | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Tuesday|11:00-0:00   | Restaurants |
+| Gallagher's | Phoenix |   3.0 | Wednesday|11:00-0:00 | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Friday|5:00-0:00     | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Monday|5:00-23:00    | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Saturday|5:00-0:00   | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Sunday|5:00-23:00    | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Thursday|5:00-23:00  | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Tuesday|5:00-23:00   | Restaurants |
+| McDonald's  | Phoenix |   2.0 | Wednesday|5:00-23:00 | Restaurants |
++-------------+---------+-------+----------------------+-------------+
+
+select distinct name,city,stars,hours, cat.category
+from business as b
+inner join hours as ho on b.id = ho.business_id
+inner join category cat on b.id = cat.business_id
+where city='Phoenix' and category='Restaurants' and stars between 4 and 5
+order by  name,hours 
+
++----------------------------------------+---------+-------+-----------------------+-------------+
+| name                                   | city    | stars | hours                 | category    |
++----------------------------------------+---------+-------+-----------------------+-------------+
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Friday|11:00-22:00    | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Monday|11:00-22:00    | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Saturday|11:00-22:00  | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Sunday|11:00-22:00    | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Thursday|11:00-22:00  | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Tuesday|11:00-22:00   | Restaurants |
+| Bootleggers Modern American Smokehouse | Phoenix |   4.0 | Wednesday|11:00-22:00 | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Friday|11:00-18:00    | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Monday|11:00-18:00    | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Saturday|11:00-18:00  | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Sunday|13:00-16:00    | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Thursday|11:00-18:00  | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Tuesday|11:00-18:00   | Restaurants |
+| Charlie D's Catfish & Chicken          | Phoenix |   4.5 | Wednesday|11:00-18:00 | Restaurants 
+
+
+
+
+There are differences in the distribution of hours. Most members of the first group  operate to the late night. In the second group most of them work from late morning to the early night. 
 
 ii. Do the two groups you chose to analyze have a different number of reviews?
-         
-         
+         Yes they have.
+
+         review_count_4_5 = 3066  
+         review_count_2_3 = 476  
+
+
 iii. Are you able to infer anything from the location data provided between these two groups? Explain.
+
+Not really, the two groups are in different zip codes. The ones in the first group are in the same area, and they have some common stars overall .
 
 SQL code used for analysis:
 
+select distinct name,city,stars,hours, cat.category,postal_code
+from business as b
+inner join hours as ho on b.id = ho.business_id
+inner join category cat on b.id = cat.business_id
+where city='Phoenix' and category='Restaurants' and stars between 4 and 55
+order by  name,hours 
 		
 		
 2. Group business based on the ones that are open and the ones that are closed. What differences can you find between the ones that are still open and the ones that are closed? List at least two differences and the SQL code you used to arrive at your answer.
