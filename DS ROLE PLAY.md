@@ -581,38 +581,182 @@ Not really, the two groups are in different zip codes. The ones in the first gro
 
 SQL code used for analysis:
 
-select distinct name,city,stars,hours, cat.category,postal_code
-from business as b
-inner join hours as ho on b.id = ho.business_id
-inner join category cat on b.id = cat.business_id
-where city='Phoenix' and category='Restaurants' and stars between 4 and 55
-order by  name,hours 
+    select distinct name,city,stars,hours, cat.category,postal_code
+    from business as b
+    inner join hours as ho on b.id = ho.business_id
+    inner join category cat on b.id = cat.business_id
+    where city='Phoenix' and category='Restaurants' and stars between 4 and 55
+    order by  name,hours 
 		
 		
 2. Group business based on the ones that are open and the ones that are closed. What differences can you find between the ones that are still open and the ones that are closed? List at least two differences and the SQL code you used to arrive at your answer.
-		
-i. Difference 1:
+
+Total open business = 8480
+Total close business= 1520  
+
+i. Difference 1: The quantity of reviews for open places is 269.300, and for close ones 35.261. 
+        
          
+ii. Difference 2: although there is a considerably larger number of reviews for open places, the average numbers of stars for open and close places are not too much different.
+
+average stars of open places 
+
+
++---------------+           
+|    avg(stars) |
++---------------+
+| 3.67900943396 |
++---------------+
+
+average stars of close places 
+
+
++---------------+
+|    avg(stars) |
++---------------+
+| 3.52039473684 |
++---------------+
+
          
-ii. Difference 2:
-         
-         
+      
          
 SQL code used for analysis:
 
-	
-	
+    select sum(review_count) 
+    from business 
+    where is_open = 1
+
+    select sum(review_count) 
+    from business 
+    where is_open = 0
+
+	select avg(stars)
+    from business 
+    where is_open = 0
+    
+    select avg(stars)
+    from business 
+    where is_open = 1
+
+
 3. For this last part of your analysis, you are going to choose the type of analysis you want to conduct on the Yelp dataset and are going to prepare the data for analysis.
 
 Ideas for analysis include: Parsing out keywords and business attributes for sentiment analysis, clustering businesses to find commonalities or anomalies between them, predicting the overall star rating for a business, predicting the number of fans a user will have, and so on. These are just a few examples to get you started, so feel free to be creative and come up with your own problem you want to solve. Provide answers, in-line, to all of the following:
 	
 i. Indicate the type of analysis you chose to do:
-         
+ I choose clustering businesses to find commonalities or anomalies between them.    
          
 ii. Write 1-2 brief paragraphs on the type of data you will need for your analysis and why you chose that data:
                            
                   
 iii. Output of your finished dataset:
+    - Total businesses 
+
+      select sum(cantidad_negocios_x_cat) total_NEGOCIOS_CAT
+        FROM
+        (select count(b.id) as cantidad_negocios_x_cat
+        from business as b
+        inner join category cat on b.id = cat.business_id
+        group by cat.category
+        order by cantidad_negocios_x_cat desc)
+        +--------------------+
+        | total_NEGOCIOS_CAT |
+        +--------------------+
+        |                696 |
+        +--------------------+
+
+
+    - Quantity of businesses for category.
+    
+    select cat.category,
+        count(b.id) as cantidad_negocios_x_cat
+    from business as b
+        inner join category cat on b.id = cat.business_id
+    group by cat.category
+    order by 2 desc
+
+    +---------------------------+-------------------------+
+    | category                  | cantidad_negocios_x_cat |
+    +---------------------------+-------------------------+
+    | Restaurants               |                      71 |
+    | Shopping                  |                      30 |
+    | Food                      |                      23 |
+    | Nightlife                 |                      20 |
+    | Bars                      |                      17 |
+    | Health & Medical          |                      17 |
+    | Home Services             |                      16 |
+    | Beauty & Spas             |                      13 |
+    | Local Services            |                      12 |
+    | American (Traditional)    |                      11 |
+    | Active Life               |                      10 |
+    | Automotive                |                       9 |
+    | Hotels & Travel           |                       9 |
+    | Burgers                   |                       8 |
+    | Sandwiches                |                       8 |
+    | Arts & Entertainment      |                       7 |
+    | Fast Food                 |                       7 |
+    | Mexican                   |                       7 |
+    | American (New)            |                       6 |
+    | Event Planning & Services |                       6 |
+    | Hair Salons               |                       6 |
+    | Bakeries                  |                       5 |
+    | Doctors                   |                       5 |
+    | Indian                    |                       5 |
+    | Japanese                  |                       5 |
+    +---------------------------+-------------------------+
+    (Output limit exceeded, 25 of 257 total rows shown)
+
+
+
+- Which state has the most quantity of business and what category is it?
+    
+    select state, count(*) cat_negocios_x_estado    
+    from business as b
+        inner join category cat on b.id = cat.business_id
+    group by category, state
+    order by 3 desc
+    limit 1
+    +-------+-----------------------+
+    | state | cat_negocios_x_estado |
+    +-------+-----------------------+
+    | ON    |                    18 |
+    +-------+-----------------------+
+
+- Which category has the most number of businesses?
+
+    select cat.category, count(*) cat_negocios 
+    from business as b
+        inner join category cat on b.id = cat.business_id
+    group by category
+    order by 2 desc
+    limit 1
+
++
+    +-------------+-----------------------+
+    | category    | cat_negocios 
+    +-------------+-----------------------+
+    | Restaurants |                    71 |
+    +-------------+-----------------------+
+
+- Top 5 business categories with their average number of stars.
+
+    select cat.category, count(b.id) as cantidad_negocios_x_cat, round(avg(stars)) as cantidad_estrellas
+    from business as b
+    inner join category cat on b.id = cat.business_id
+    group by cat.category
+    order by 2 desc
+    limit 5
+
+
+    +-------------+-------------------------+--------------------+
+    | category    | cantidad_negocios_x_cat | cantidad_estrellas |
+    +-------------+-------------------------+--------------------+
+    | Restaurants |                      71 |                3.0 |
+    | Shopping    |                      30 |                4.0 |
+    | Food        |                      23 |                4.0 |
+    | Nightlife   |                      20 |                3.0 |
+    | Bars        |                      17 |                4.0 |
+    +-------------+-------------------------+--------------------+
          
          
 iv. Provide the SQL code you used to create your final dataset:
