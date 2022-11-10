@@ -644,13 +644,15 @@ SQL code used for analysis:
 Ideas for analysis include: Parsing out keywords and business attributes for sentiment analysis, clustering businesses to find commonalities or anomalies between them, predicting the overall star rating for a business, predicting the number of fans a user will have, and so on. These are just a few examples to get you started, so feel free to be creative and come up with your own problem you want to solve. Provide answers, in-line, to all of the following:
 	
 i. Indicate the type of analysis you chose to do:
- I choose clustering businesses to find commonalities or anomalies between them.    
+ I chose clustering businesses to find commonalities or anomalies between them.    
          
 ii. Write 1-2 brief paragraphs on the type of data you will need for your analysis and why you chose that data:
+
+I chose clustering businesses acording to the category they have and if they are open. It s very important to know how the businesses are distributed between states, what are the top categories of businesess, the average amount of stars they have, the distribution of business among states and the top ten restaurants with most reviews.    
                            
                   
 iii. Output of your finished dataset:
-    - Total businesses 
+- Total businesses 
 
       select sum(cantidad_negocios_x_cat) total_NEGOCIOS_CAT
         FROM
@@ -665,98 +667,158 @@ iii. Output of your finished dataset:
         |                696 |
         +--------------------+
 
+- Total of open business
 
-    - Quantity of businesses for category.
-    
-    select cat.category,
-        count(b.id) as cantidad_negocios_x_cat
-    from business as b
+    select sum(cantidad_negocios_x_cat) total_NEGOCIOS_ab
+        FROM
+        (select count(b.id) as cantidad_negocios_x_cat
+        from business as b
         inner join category cat on b.id = cat.business_id
-    group by cat.category
-    order by 2 desc
+        WHERE is_open=1
+        group by cat.category
+        order by cantidad_negocios_x_cat desc)
 
-    +---------------------------+-------------------------+
-    | category                  | cantidad_negocios_x_cat |
-    +---------------------------+-------------------------+
-    | Restaurants               |                      71 |
-    | Shopping                  |                      30 |
-    | Food                      |                      23 |
-    | Nightlife                 |                      20 |
-    | Bars                      |                      17 |
-    | Health & Medical          |                      17 |
-    | Home Services             |                      16 |
-    | Beauty & Spas             |                      13 |
-    | Local Services            |                      12 |
-    | American (Traditional)    |                      11 |
-    | Active Life               |                      10 |
-    | Automotive                |                       9 |
-    | Hotels & Travel           |                       9 |
-    | Burgers                   |                       8 |
-    | Sandwiches                |                       8 |
-    | Arts & Entertainment      |                       7 |
-    | Fast Food                 |                       7 |
-    | Mexican                   |                       7 |
-    | American (New)            |                       6 |
-    | Event Planning & Services |                       6 |
-    | Hair Salons               |                       6 |
-    | Bakeries                  |                       5 |
-    | Doctors                   |                       5 |
-    | Indian                    |                       5 |
-    | Japanese                  |                       5 |
-    +---------------------------+-------------------------+
-    (Output limit exceeded, 25 of 257 total rows shown)
+        +--------------------+
+        | total_NEGOCIOS_CAT |
+        +--------------------+
+        |                574 |
+        +--------------------+
 
-
-
-- Which state has the most quantity of business and what category is it?
-    
-    select state, count(*) cat_negocios_x_estado    
-    from business as b
+-Total close business 
+        select sum(cantidad_negocios_x_cat) total_NEGOCIOS_cerr
+        FROM
+        (select count(b.id) as cantidad_negocios_x_cat
+        from business as b
         inner join category cat on b.id = cat.business_id
-    group by category, state
-    order by 3 desc
-    limit 1
-    +-------+-----------------------+
-    | state | cat_negocios_x_estado |
-    +-------+-----------------------+
-    | ON    |                    18 |
-    +-------+-----------------------+
+        WHERE is_open=0
+        group by cat.category
+        order by cantidad_negocios_x_cat desc)
 
-- Which category has the most number of businesses?
+        +---------------------+
+        | total_NEGOCIOS_cerr |
+        +---------------------+
+        |                 122 |
+        +---------------------+
+
+ - Quantity of businesses for category.
+        
+        select cat.category,
+            count(b.id) as cantidad_negocios_x_cat
+        from business as b
+            inner join category cat on b.id = cat.business_id
+        where  is_open=1
+        group by cat.category
+        order by 2 desc
+
+        +------------------------+-------------------------+
+        | category               | cantidad_negocios_x_cat |
+        +------------------------+-------------------------+
+        | Restaurants            |                      53 |
+        | Shopping               |                      25 |
+        | Food                   |                      20 |
+        | Health & Medical       |                      16 |
+        | Home Services          |                      15 |
+        | Beauty & Spas          |                      12 |
+        | Nightlife              |                      12 |
+        | Bars                   |                      11 |
+        | Active Life            |                      10 |
+        | Local Services         |                      10 |
+        | Automotive             |                       9 |
+        | American (Traditional) |                       8 |
+        | Hotels & Travel        |                       8 |
+        | Arts & Entertainment   |                       7 |
+        | Burgers                |                       7 |
+        | Fast Food              |                       7 |
+        | Hair Salons            |                       6 |
+        | Sandwiches             |                       6 |
+        | Doctors                |                       5 |
+        | Mexican                |                       5 |
+        | Apartments             |                       4 |
+        | Auto Repair            |                       4 |
+        | Bakeries               |                       4 |
+        | Indian                 |                       4 |
+        | Parks                  |                       4 |
+        +------------------------+-------------------------+
+        (Output limit exceeded, 25 of 235 total rows shown) 
+
+
+- Which category has the most number of open businesses?
 
     select cat.category, count(*) cat_negocios 
     from business as b
         inner join category cat on b.id = cat.business_id
+    where is_open =1
     group by category
-    order by 2 desc
+        order by 2 desc
     limit 1
 
-+
-    +-------------+-----------------------+
-    | category    | cat_negocios 
-    +-------------+-----------------------+
-    | Restaurants |                    71 |
-    +-------------+-----------------------+
+    +-------------+--------------+
+    | category    | cat_negocios |
+    +-------------+--------------+
+    | Restaurants |           53 |
+    +-------------+--------------+
 
-- Top 5 business categories with their average number of stars.
+- Top 5 open business categories with their average number of stars.
 
-    select cat.category, count(b.id) as cantidad_negocios_x_cat, round(avg(stars)) as cantidad_estrellas
+    
+    select cat.category, count(b.id) as cantidad_negocios_x_cat, round(avg(stars)) as cantidad_avg_estrellas
     from business as b
     inner join category cat on b.id = cat.business_id
+    where is_open=1
     group by cat.category
     order by 2 desc
     limit 5
+    +------------------+-------------------------+------------------------+
+    | category         | cantidad_negocios_x_cat | cantidad_avg_estrellas |
+    +------------------+-------------------------+------------------------+
+    | Restaurants      |                      53 |                    3.0 |
+    | Shopping         |                      25 |                    4.0 |
+    | Food             |                      20 |                    4.0 |
+    | Health & Medical |                      16 |                    4.0 |
+    | Home Services    |                      15 |                    4.0 |
+    +------------------+-------------------------+------------------------+
 
+- States with most number of open Restaurants.
 
-    +-------------+-------------------------+--------------------+
-    | category    | cantidad_negocios_x_cat | cantidad_estrellas |
-    +-------------+-------------------------+--------------------+
-    | Restaurants |                      71 |                3.0 |
-    | Shopping    |                      30 |                4.0 |
-    | Food        |                      23 |                4.0 |
-    | Nightlife   |                      20 |                3.0 |
-    | Bars        |                      17 |                4.0 |
-    +-------------+-------------------------+--------------------+
-         
-         
+    select cat.category, b.state, count(*) cantidad_rest_state
+        from business as b
+            inner join category cat on b.id = cat.business_id
+        where cat.category="Restaurants"  and is_open=1
+        group by 2
+        order by 3 desc
+        
+
+        +-------------+-------+---------------------+
+        | category    | state | cantidad_rest_state |
+        +-------------+-------+---------------------+
+        | Restaurants | ON    |                  16 |
+        | Restaurants | AZ    |                  11 |
+        | Restaurants | OH    |                  10 |
+        | Restaurants | PA    |                   3 |
+        | Restaurants | WI    |                   3 |
+        | Restaurants | EDH   |                   2 |
+        | Restaurants | NC    |                   2 |
+        | Restaurants | NV    |                   2 |
+        | Restaurants | QC    |                   2 |
+        | Restaurants | BW    |                   1 |
+        | Restaurants | HLD   |                   1 |
+        +-------------+-------+---------------------+
+
+- Top ten Restaurants with most reviews
+
+        +-------------+--------------+-------+
+        | category    | review_count | stars |
+        +-------------+--------------+-------+
+        | Restaurants |          768 |   4.0 |
+        | Restaurants |          431 |   4.0 |
+        | Restaurants |          361 |   4.5 |
+        | Restaurants |          267 |   5.0 |
+        | Restaurants |          188 |   4.0 |
+        | Restaurants |          168 |   4.0 |
+        | Restaurants |          141 |   3.0 |
+        | Restaurants |          129 |   4.0 |
+        | Restaurants |          123 |   3.0 |
+        | Restaurants |          105 |   4.0 |
+        +-------------+--------------+-------+
+                
 iv. Provide the SQL code you used to create your final dataset:
